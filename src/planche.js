@@ -595,7 +595,7 @@ var Planche = (function () {
       txt = (txt ? txt + " · " : "") + "longueur " + this.texteMesure(L);
       if (this.tool === "vec") txt += " · direction " + fr(G.heading(q.x - a.x, q.y - a.y), 1) + " °";
     }
-    el.textContent = txt ? "Pointeur " + txt.replace(/^sur/, "sur") : "";
+    el.textContent = txt ? "Pointeur " + txt : "";
   };
   // relevés : vecteurs, distances et angles de l'élève
   Pl.prototype.releves = function () {

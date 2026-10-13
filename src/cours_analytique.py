@@ -64,7 +64,8 @@ def svg_roulement():
           '<text x="92" y="172" font-size="12" font-style="italic">a</text><text x="138" y="168" font-size="12" font-style="italic">b</text>'
           '<path d="M60 40a70 70 0 0 1 90 0" fill="none" stroke="#1C2530" marker-end="url(#fr-a)"/>'
           '<text x="78" y="30" font-size="12">mouvement</text>'
-          '<text x="125" y="205" font-size="12" text-anchor="middle">bourrelet de matière qui s\'oppose au déplacement</text>')
+          '<text x="125" y="204" font-size="12" text-anchor="middle">bourrelet de matière</text>'
+          '<text x="125" y="219" font-size="12" text-anchor="middle">qui s\'oppose au déplacement</text>')
     s += '<text x="260" y="120" font-size="26">⇔</text>'
     # 2 : les actions
     s += ('<circle cx="390" cy="115" r="60" fill="#FBF6EA" stroke="#1C2530" stroke-width="2"/>'
@@ -156,7 +157,7 @@ def svg_roue_porteuse():
             '<path d="M350 276H374M350 270v12M374 270v12" stroke="#2E7D5B"/><text x="356" y="290" font-size="12" fill="#2E7D5B" font-style="italic">a</text>'
             '<path d="M560 236H640" stroke="#1C2530"/><text x="630" y="228" font-size="13" font-style="italic">x</text>'
             '<path d="M228 150a150 150 0 0 1 50-70" fill="none" stroke="#1C2530" marker-end="url(#rp-a)"/>'
-            '<text x="190" y="120" font-size="13">ω constante</text>'
+            '<text x="120" y="112" font-size="13">ω constante</text>'
             '<path d="M320 66V236" stroke="#2E7D5B" stroke-width=".8"/><text x="290" y="160" font-size="12" fill="#2E7D5B" '
             'font-style="italic">r = OI</text></svg>')
 
