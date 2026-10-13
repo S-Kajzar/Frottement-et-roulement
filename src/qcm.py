@@ -59,7 +59,7 @@ CONSIGNES = """<p class="only-training"><strong>Mode entraînement.</strong> Cho
 QCM_CSS = """
 /* ---------- QCM (questions à propositions) ---------- */
 .qcm .fig{margin:8px 0}
-.qcm-opts{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px; max-width:820px}
+.qcm-opts{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px}
 .qcm-o{display:flex; align-items:flex-start; gap:10px; width:100%; text-align:left; background:#fff; border:1.5px solid var(--trait); border-radius:3px; padding:8px 12px; font:inherit; font-size:.97rem; color:var(--encre); cursor:pointer}
 .qcm-o:hover:not(:disabled){border-color:var(--encre); background:var(--jaune-pale)}
 .qcm-o:focus-visible{outline:3px solid var(--jaune); outline-offset:1px}

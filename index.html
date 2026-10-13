@@ -410,6 +410,10 @@ body:not(.mode-training) .only-training,body:not(.mode-exam) .only-exam{display:
 </style>
 <style>
 /* ---------- compléments de contenu (hors gabarit) : écriture des calculs, documents ---------- */
+/* le texte occupe toute la largeur des blocs blancs (cours, activités, accueil) : le gabarit limite paragraphes,
+   énoncés, données et corrections à 72-80 caractères ; ces limites sont levées ici, le gabarit reste inchangé */
+.part-body>p,.part-body>ul,.part-body>ol,.data,.q-stem,.q-hint,.q-expl,.selfeval,.recap-head p,.recap .final-detail,
+.home-sub,.es-lead,.sk-side{max-width:none}
 .eq{margin:.35rem 0 .55rem; overflow-x:auto; line-height:2.1}
 .frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .12em; line-height:1.25}
 .frac>span{padding:0 .25em; white-space:nowrap}
@@ -497,16 +501,15 @@ body.cours-page .home-inner{max-width:1180px}
 .cours-nav a{font:600 .92rem var(--f-titre); color:var(--encre); background:var(--papier); border:1.5px solid var(--encre); padding:5px 12px; text-decoration:none}
 .cours-nav a:hover{background:var(--jaune-pale)}
 .cours-defi{font-weight:700; color:var(--bleu)}
-.cours-sec .part-body>p,.cours-sec .part-body>ul{max-width:none}
 .cours .part-body h3,.cours-sec .part-body h3{font:700 1.12rem var(--f-titre); margin:18px 0 6px}
 .c-fiche{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; margin:0 0 14px}
 .c-fiche>div{background:var(--papier); border:1.5px solid var(--encre); padding:6px 14px 10px}
 .c-fiche h3{margin:4px 0 6px; font:700 1rem var(--f-titre)}
 .c-fiche ul{margin:0; padding-left:1.1rem; font-size:.9rem} .c-fiche li{margin:.2rem 0}
 @media (max-width:900px){ .c-fiche{grid-template-columns:1fr} }
-.definition{border:2px dashed var(--encre-2); background:#fff; padding:8px 16px; margin:12px 0; max-width:80ch}
+.definition{border:2px dashed var(--encre-2); background:#fff; padding:8px 16px; margin:12px 0}
 .definition p{margin:.25rem 0}
-.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0; max-width:760px}
+.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0}
 .formule .f-main{font:700 1.35rem var(--f-titre); line-height:2}
 .formule .f-units{font-size:.9rem; color:var(--encre-2)}
 .simu{border:2px solid var(--bleu); background:var(--bleu-pale); padding:12px 16px; margin:14px 0}
@@ -529,7 +532,7 @@ body.cours-page .home-inner{max-width:1180px}
 .simu svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin)}
 .exemple{background:#F6F7F4; border:1px solid var(--trait-fin); padding:6px 16px; margin-top:12px}
 .exemple h3{font:700 1.05rem var(--f-titre); margin:10px 0 4px}
-.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0; max-width:80ch}
+.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0}
 .remarque p{margin:.2rem 0}
 .c-fig{margin:10px auto 14px; max-width:860px}
 .c-fig svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin); font-family:var(--f-texte)}
@@ -622,7 +625,7 @@ body.cours-page .home-inner{max-width:1180px}
 
 /* ---------- QCM (questions à propositions) ---------- */
 .qcm .fig{margin:8px 0}
-.qcm-opts{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px; max-width:820px}
+.qcm-opts{display:flex; flex-direction:column; gap:6px; margin:8px 0 4px}
 .qcm-o{display:flex; align-items:flex-start; gap:10px; width:100%; text-align:left; background:#fff; border:1.5px solid var(--trait); border-radius:3px; padding:8px 12px; font:inherit; font-size:.97rem; color:var(--encre); cursor:pointer}
 .qcm-o:hover:not(:disabled){border-color:var(--encre); background:var(--jaune-pale)}
 .qcm-o:focus-visible{outline:3px solid var(--jaune); outline-offset:1px}
@@ -651,7 +654,7 @@ body.cours-page .home-inner{max-width:1180px}
 <style id="pl-css">/* ---------- planche de construction graphique (src/planche.js) ---------- */
 .pl{margin:14px 0 8px; padding:10px 0 12px 14px; border-left:3px dashed var(--bleu)}
 .pl.is-ok{border-left-color:var(--vert)} .pl.is-half{border-left-color:var(--orange)} .pl.is-ko{border-left-color:var(--rouge)}
-.pl-consigne{margin:0 0 6px; max-width:80ch}
+.pl-consigne{margin:0 0 6px}
 .pl-donnees{display:flex; flex-wrap:wrap; gap:4px 18px; font-size:.88rem; margin:0 0 6px; color:var(--encre-2)}
 .pl-donnees b{color:var(--encre)}
 .pl-bar{display:flex; flex-wrap:wrap; gap:4px; align-items:center; background:#EEF1F4; border:1px solid var(--trait); border-bottom:0; padding:5px}

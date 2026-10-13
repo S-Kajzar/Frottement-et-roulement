@@ -21,6 +21,8 @@ trottoir, cône de frottement en D), puis les rubriques **Les cours**, **L'ateli
 titre, 3 à 5 mots-clés et un bouton (test navigateur). Les images des cartes sont photographiées dans les pages
 (`outils/captures.js`) puis recadrées en 480 × 270 (`outils/preparer-images.sh`).
 
+**Largeur du texte** : dans les cours, les activités et l'accueil, le texte occupe toute la largeur des blocs blancs. Le gabarit limite les paragraphes, données, énoncés, indications et corrections à 72 à 80 caractères (ce qui convient à un sujet imprimé) ; ces limites sont levées dans la feuille de style du contenu (`CONTENT_CSS` de `src/generer.py`), sans modifier le gabarit. Remarques, définitions, encadrés de formules, propositions de QCM et consignes des planches suivent la même règle. Les figures gardent leur largeur maximale.
+
 **Pastilles** : les niveaux (Niveau 1 / Niveau 2) de « Chaîne fonctionnelle » deviennent la **méthode** de résolution,
 puisque le cours est scindé en deux : pastille verte **Analytique**, pastille bleue **Graphique**.
 

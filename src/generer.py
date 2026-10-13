@@ -480,16 +480,15 @@ body.cours-page .home-inner{max-width:1180px}
 .cours-nav a{font:600 .92rem var(--f-titre); color:var(--encre); background:var(--papier); border:1.5px solid var(--encre); padding:5px 12px; text-decoration:none}
 .cours-nav a:hover{background:var(--jaune-pale)}
 .cours-defi{font-weight:700; color:var(--bleu)}
-.cours-sec .part-body>p,.cours-sec .part-body>ul{max-width:none}
 .cours .part-body h3,.cours-sec .part-body h3{font:700 1.12rem var(--f-titre); margin:18px 0 6px}
 .c-fiche{display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; margin:0 0 14px}
 .c-fiche>div{background:var(--papier); border:1.5px solid var(--encre); padding:6px 14px 10px}
 .c-fiche h3{margin:4px 0 6px; font:700 1rem var(--f-titre)}
 .c-fiche ul{margin:0; padding-left:1.1rem; font-size:.9rem} .c-fiche li{margin:.2rem 0}
 @media (max-width:900px){ .c-fiche{grid-template-columns:1fr} }
-.definition{border:2px dashed var(--encre-2); background:#fff; padding:8px 16px; margin:12px 0; max-width:80ch}
+.definition{border:2px dashed var(--encre-2); background:#fff; padding:8px 16px; margin:12px 0}
 .definition p{margin:.25rem 0}
-.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0; max-width:760px}
+.formule{display:flex; flex-wrap:wrap; gap:14px 28px; align-items:center; border:2px solid var(--rouge); background:#fff; padding:10px 18px; margin:12px 0}
 .formule .f-main{font:700 1.35rem var(--f-titre); line-height:2}
 .formule .f-units{font-size:.9rem; color:var(--encre-2)}
 .simu{border:2px solid var(--bleu); background:var(--bleu-pale); padding:12px 16px; margin:14px 0}
@@ -512,7 +511,7 @@ body.cours-page .home-inner{max-width:1180px}
 .simu svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin)}
 .exemple{background:#F6F7F4; border:1px solid var(--trait-fin); padding:6px 16px; margin-top:12px}
 .exemple h3{font:700 1.05rem var(--f-titre); margin:10px 0 4px}
-.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0; max-width:80ch}
+.remarque{border-left:6px solid var(--jaune); background:var(--jaune-pale); padding:8px 14px; margin:12px 0}
 .remarque p{margin:.2rem 0}
 .c-fig{margin:10px auto 14px; max-width:860px}
 .c-fig svg{display:block; width:100%; height:auto; background:#fff; border:1px solid var(--trait-fin); font-family:var(--f-texte)}
@@ -626,6 +625,10 @@ PLANCHES_EXO_JS = r"""<script>/* Planches des activités : comptées comme des t
 
 CONTENT_CSS = """<style>
 /* ---------- compléments de contenu (hors gabarit) : écriture des calculs, documents ---------- */
+/* le texte occupe toute la largeur des blocs blancs (cours, activités, accueil) : le gabarit limite paragraphes,
+   énoncés, données et corrections à 72-80 caractères ; ces limites sont levées ici, le gabarit reste inchangé */
+.part-body>p,.part-body>ul,.part-body>ol,.data,.q-stem,.q-hint,.q-expl,.selfeval,.recap-head p,.recap .final-detail,
+.home-sub,.es-lead,.sk-side{max-width:none}
 .eq{margin:.35rem 0 .55rem; overflow-x:auto; line-height:2.1}
 .frac{display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; margin:0 .12em; line-height:1.25}
 .frac>span{padding:0 .25em; white-space:nowrap}

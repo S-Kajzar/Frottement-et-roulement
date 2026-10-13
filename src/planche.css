@@ -1,7 +1,7 @@
 /* ---------- planche de construction graphique (src/planche.js) ---------- */
 .pl{margin:14px 0 8px; padding:10px 0 12px 14px; border-left:3px dashed var(--bleu)}
 .pl.is-ok{border-left-color:var(--vert)} .pl.is-half{border-left-color:var(--orange)} .pl.is-ko{border-left-color:var(--rouge)}
-.pl-consigne{margin:0 0 6px; max-width:80ch}
+.pl-consigne{margin:0 0 6px}
 .pl-donnees{display:flex; flex-wrap:wrap; gap:4px 18px; font-size:.88rem; margin:0 0 6px; color:var(--encre-2)}
 .pl-donnees b{color:var(--encre)}
 .pl-bar{display:flex; flex-wrap:wrap; gap:4px; align-items:center; background:#EEF1F4; border:1px solid var(--trait); border-bottom:0; padding:5px}
