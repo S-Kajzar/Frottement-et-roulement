@@ -1,11 +1,11 @@
-"""Cours 1 — Frottement et roulement : approche analytique (?ex=cours-frottement-analytique).
+"""Cours — Frottement et roulement (?ex=cours-frottement-roulement).
 
 Source : manuel, chapitre 9 « Frottement et roulement », pages 123 à 131 (src/images/originaux/cours-p123 à p131).
-Le chapitre est scindé en deux cours : celui-ci reprend tout ce qui se calcule (adhérence et frottement, coefficients,
-lois de Coulomb écrites en inégalités, résistance au roulement et ses deux exemples) ; le cours 2 reprend ce qui se
-construit (cônes, lecture graphique des lois, montée de trottoir). Le texte du manuel est conservé ; ses figures,
-photographiées, sont redessinées en SVG ; le colis de l'exemple 1 et l'automobile de l'exemple de roulement
-deviennent des simulateurs.
+Le cours reprend ce qui se calcule : adhérence et frottement, coefficients, lois de Coulomb écrites en égalités et
+inégalités, résistance au roulement et ses deux exemples. La résolution graphique du chapitre (cône de frottement,
+lecture graphique des lois, montée de trottoir, pages 126 à 129) n'est pas traitée sur le site. Le texte du manuel est
+conservé ; ses figures, photographiées, sont redessinées en SVG ; le colis de l'exemple 1 et l'automobile de l'exemple
+de roulement deviennent des simulateurs.
 """
 import math
 
@@ -167,7 +167,7 @@ def tors(rows, pt):
     return f'<span class="tors"><span class="cr">{cells}</span><sub class="pt">{pt}</sub></span>'
 
 
-def render(h, planches):
+def render(h):
     obj = "".join(f"<li>{o}</li>" for o in OBJECTIFS)
     pre = "".join(f"<li>{p}</li>" for p in PREREQUIS)
     fiche = (f'<div class="c-fiche"><div><h3>Objectifs</h3><ul>{obj}</ul></div>'
@@ -190,7 +190,7 @@ def render(h, planches):
         f'<figure>{courroie}<figcaption><b>Transmission par courroie</b> : c\'est l\'adhérence de la courroie sur les '
         "poulies qui transmet le mouvement, sans glissement.</figcaption></figure>"
         f'<figure>{serre}<figcaption><b>Serre-joint</b> : la pièce anti-recul s\'<b>arc-boute</b> sur la barre de '
-        "guidage ; plus on serre, plus elle bloque (cours 2).</figcaption></figure></div>")
+        "guidage ; plus on serre, plus elle bloque (activité 6, le barbecue).</figcaption></figure></div>")
     mats = "".join(f'<option value="{i}"{" selected" if i == 6 else ""}>{n}</option>' for i, (n, _a, _b) in enumerate(MATERIAUX))
     s2 = h.course_section(2, "ca-adh", "Adhérence et frottement : le colis",
         '<div class="definition"><p>Si deux surfaces en contact se déplacent ou glissent l\'une par rapport à l\'autre, '
@@ -222,8 +222,7 @@ def render(h, planches):
         '<div class="remarque"><p><b>Remarques :</b> la force de frottement <i>T</i> = µ·<i>N</i> = <i>f</i>·<i>N</i> '
         "s'oppose au mouvement du colis et est à l'origine des pertes d'énergie par frottement. Si l'objet est arrêté, "
         "il faudra, pour le remettre en mouvement, fournir un effort <i>F</i> ≥ µ<sub>s</sub>·<i>N</i>. Les phases "
-        "observées sont résumées par le graphique du simulateur ci-dessous. Chacun de ces coefficients s'écrit aussi "
-        "comme la tangente d'un angle (µ = tan φ) : c'est l'objet du cours 2.</p></div>"
+        "observées sont résumées par le graphique du simulateur ci-dessous.</p></div>"
         '<div class="simu" id="ca-colis"><h3>Simulateur : pousse le colis</h3>'
         '<div class="simu-grid"><label><span>Poussée <i>F</i> : <output id="ca-F-o">0 N</output></span>'
         '<input type="range" id="ca-F" min="0" max="100" step="1" value="0" aria-describedby="ca-etat"></label>'
@@ -243,7 +242,7 @@ def render(h, planches):
         "<p>N = P = 20 × 9,81 = 196,2 N ; il démarre quand F dépasse µ<sub>s</sub>·N = 0,8 × 196,2 ≈ 157 N ; ensuite "
         "µ·N = 0,6 × 196,2 ≈ 118 N suffit à le faire glisser à vitesse constante.</p></details></div>")
     s3 = h.course_section(3, "ca-coef", "Le facteur de frottement",
-        "<p>µ ou <i>f</i>, µ<sub>s</sub> ou <i>f</i><sub>s</sub> (et les angles φ<sub>s</sub> et φ du cours 2) ne "
+        "<p>µ ou <i>f</i>, µ<sub>s</sub> ou <i>f</i><sub>s</sub> ne "
         "dépendent ni de l'intensité des efforts exercés, ni de l'étendue des surfaces en contact. Ils dépendent "
         "essentiellement de la <b>nature des matériaux</b> en contact et, dans une moindre mesure, de la qualité "
         "(<b>rugosité</b>) des surfaces en contact. µ varie aussi avec la <b>vitesse</b> relative de déplacement des "
@@ -273,7 +272,7 @@ def render(h, planches):
         '<div class="exemple"><h3>Exemple : la voiture freinée dans une pente</h3><p>Une voiture de 3 000 daN est '
         "arrêtée dans une pente de 20 % ; seules les roues avant (A) sont freinées. Le principe fondamental donne, en A, "
         "N<sub>A</sub> ≈ 998 daN et T<sub>A</sub> ≈ 588 daN. Avec µ<sub>s</sub> = 0,6 : µ<sub>s</sub>·N<sub>A</sub> ≈ "
-        "599 daN ≥ T<sub>A</sub> : il y a adhérence, la voiture tient — de justesse. Activités 3 et 4.</p></div>")
+        "599 daN ≥ T<sub>A</sub> : il y a adhérence, la voiture tient — de justesse. Activités 2 et 3.</p></div>")
     s5 = h.course_section(5, "ca-roul", "La résistance au roulement",
         f'<figure class="c-fig">{svg_roulement()}<figcaption>Phénomène de résistance au roulement : définition de '
         "a.</figcaption></figure>"
@@ -281,8 +280,8 @@ def render(h, planches):
         "roulant et s'oppose au mouvement : c'est la résistance au roulement. <i>R</i> schématise la résultante des "
         "pressions de contact exercées par le bourrelet sur l'élément roulant entre a et b. <i>F</i><sub>R</sub> "
         "représente la force qu'il faut exercer pour assurer ou maintenir le roulement de l'élément roulant.</p>"
-        "<p>L'application du principe fondamental de la statique (trois forces concourantes en O, voir le cours 2) "
-        "donne :</p>"
+        "<p>L'application du principe fondamental de la statique (trois forces : F et F<sub>R</sub> en O, R entre a et "
+        "b ; moments en O) donne :</p>"
         '<div class="formule"><span class="f-main">F<sub>R</sub> = (a / r)·F = f<sub>R</sub>·F</span>'
         '<span class="f-units">a : coefficient de résistance au roulement (mm) ; f<sub>R</sub> = a / r : facteur de '
         "frottement de roulement ; r : rayon de l'élément roulant</span></div>"
@@ -366,9 +365,7 @@ def render(h, planches):
                "usuels : f<sub>R</sub> ≈ 0,012, soit 12 kg pour une tonne.")]
     s6 = h.course_section(6, "ca-ess", "L'essentiel à retenir",
         '<div class="cartes">' + "".join(f'<button type="button" class="carte" aria-expanded="false"><b>{t}</b>'
-                                          f'<span class="dos">{d}</span></button>' for t, d in cartes) + "</div>"
-        "<p>Les mêmes lois se lisent sur une figure : l'action de contact est dans le cône d'adhérence, sur le cône de "
-        "frottement… C'est l'objet du cours 2.</p>")
+                                          f'<span class="dos">{d}</span></button>' for t, d in cartes) + "</div>")
     quiz = [
         ("Un colis immobile est poussé horizontalement, sans bouger. La force d'adhérence vaut :",
          ["µ<sub>s</sub>·N", "la poussée F, en sens opposé", "zéro"], 1,
@@ -395,13 +392,13 @@ def render(h, planches):
          "a est une longueur (le décalage de R) ; f<sub>R</sub> = a / r, lui, n'a pas d'unité."),
     ]
     quiz_s = h.quiz_section(7, "ca-quiz", quiz, "ca-q")
-    foot = ('<div class="cours-foot no-print"><a class="btn" href="?ex=cours-frottement-graphique">Cours 2 : résolution '
-            'graphique</a><a class="btn ghost" href="?ex=voiture-route-mouillee">S\'entraîner : Activité 5</a>'
-            '<a class="btn ghost" href="?ex=resistance-roulement">Activité 6</a>'
+    foot = ('<div class="cours-foot no-print"><a class="btn" href="?ex=voiture-pente">S\'entraîner : Activité 2</a>'
+            '<a class="btn ghost" href="?ex=voiture-route-mouillee">Activité 4</a>'
+            '<a class="btn ghost" href="?ex=resistance-roulement">Activité 5</a>'
             f'<a class="btn ghost" href="?">{h.HOUSE} Accueil</a></div>')
-    head = h.course_head("Cours 1", "Analytique", "Frottement et roulement : approche analytique",
-                         "Adhérence et frottement, coefficients, lois de Coulomb et résistance au roulement : tout ce "
-                         "qui se calcule. Simulateurs, synthèse et quiz.")
+    head = h.course_head("Cours", "Frottement et roulement",
+                         "Adhérence et frottement, coefficients, lois de Coulomb et résistance au roulement. "
+                         "Simulateurs, synthèse et quiz.")
     return (f'<div class="cours">{head}<nav class="c-top" aria-label="Navigation"><a href="?">{h.HOUSE} Accueil</a></nav>'
             f"{fiche}{h.course_nav(sections)}{s1}{s2}{s3}{s4}{s5}{s6}{quiz_s}{foot}</div>")
 
@@ -420,24 +417,23 @@ def _table_coef():
 
 
 def _demarche():
-    """Figure 6 du manuel (démarche générale), écrite avec les inégalités du cours 1."""
+    """Figure 6 du manuel (démarche générale), écrite avec les égalités et inégalités des lois de Coulomb."""
     return ('<div class="ca-dem" role="group" aria-label="Démarche générale des lois du frottement">'
             '<p class="ca-dq">Les surfaces en contact glissent-elles l\'une sur l\'autre ?</p>'
             '<div class="ca-dcols"><div class="ca-dcol oui"><p class="ca-dr">Oui : cas c), le frottement</p>'
-            "<p>f = µ = tan φ</p><p>La force de frottement s'oppose au mouvement des surfaces en contact : "
-            "T = f·N = µ·N.</p><p>L'action de contact est inclinée de φ par rapport à l'effort normal N (sur le cône de "
-            "frottement).</p></div>"
+            "<p>f = µ</p><p>La force de frottement s'oppose au mouvement des surfaces en contact : "
+            "T = f·N = µ·N.</p></div>"
             '<div class="ca-dcol non"><p class="ca-dr">Non : l\'adhérence (pas de mouvement au contact)</p>'
-            "<p>f<sub>s</sub> = µ<sub>s</sub> = tan φ<sub>s</sub></p><p class=\"ca-dq2\">Est-on à la limite entre "
+            "<p>f<sub>s</sub> = µ<sub>s</sub></p><p class=\"ca-dq2\">Est-on à la limite entre "
             "glissement et adhérence (équilibre strict) ?</p><div class=\"ca-dcols\"><div><p class=\"ca-dr\">Oui : "
-            "cas b)</p><p>T<sub>a</sub> = f<sub>s</sub>·N = µ<sub>s</sub>·N ; l'action est inclinée de φ<sub>s</sub> "
-            "(sur le cône d'adhérence).</p></div><div><p class=\"ca-dr\">Non : cas a)</p><p>T<sub>a</sub> &lt; "
-            "f<sub>s</sub>·N ; l'action est inclinée de α &lt; φ<sub>s</sub> (dans le cône d'adhérence).</p></div>"
+            "cas b)</p><p>T<sub>a</sub> = f<sub>s</sub>·N = µ<sub>s</sub>·N : le glissement est sur le point de "
+            "commencer.</p></div><div><p class=\"ca-dr\">Non : cas a)</p><p>T<sub>a</sub> &lt; "
+            "f<sub>s</sub>·N : il reste une marge avant le glissement.</p></div>"
             "</div></div></div></div>")
 
 
 JS = r"""
-  function initCoursAnalytique(root) {
+  function initCours(root) {
     var NS = "http://www.w3.org/2000/svg";
     function $(s) { return root.querySelector(s); }
     var MAT = __MAT__;
@@ -528,7 +524,7 @@ JS = r"""
 """.replace("__MAT__", repr([[n, a, b] for n, a, b in MATERIAUX]).replace("'", '"'))
 
 CSS = """
-/* ---------- cours 1 : approche analytique ---------- */
+/* ---------- cours ---------- */
 .ca-ex{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:10px 0}
 .ca-ex figure{margin:0; background:#fff; border:1px solid var(--trait-fin); padding:8px}
 .ca-ex svg{display:block; width:100%; height:auto; font-family:var(--f-texte)}

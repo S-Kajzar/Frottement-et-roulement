@@ -1,7 +1,7 @@
 {
   "name": "frottement-et-roulement-interactif",
   "private": true,
-  "description": "Cours et activités interactifs autonomes : adhérence, frottement, lois de Coulomb, cône de frottement, arc-boutement, résistance au roulement ; planche de construction graphique",
+  "description": "Cours et activités interactifs autonomes : adhérence, frottement, lois de Coulomb, arc-boutement, résistance au roulement",
   "scripts": {
     "images": "bash outils/preparer-images.sh",
     "generer": "python3 src/generer.py",

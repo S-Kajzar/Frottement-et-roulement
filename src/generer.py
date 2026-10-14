@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Génère la page « Frottement et roulement » (index.html) sur la construction du dépôt « Chaîne fonctionnelle »
-(elle-même reprise du dépôt « Résistance des matériaux ») : un accueil en cartes, deux cours interactifs (approche
-analytique, résolution graphique), l'atelier de construction graphique, les activités tirées des exercices du
-chapitre et la rubrique « Études de cas », chacun ouvert par ?ex=….
+(elle-même reprise du dépôt « Résistance des matériaux ») : un accueil en cartes, le cours interactif, les
+activités tirées des exercices du chapitre et la rubrique « Études de cas », chacun ouvert par ?ex=…. La résolution
+graphique du chapitre (cône de frottement) n'est pas traitée : cours et activités sont analytiques.
 
     python3 src/generer.py
 
@@ -12,10 +12,6 @@ seules les entrées propres au sujet du moteur applicatif sont remplacées, chaq
 DECOR, DR_NAMES, le texte de la fenêtre « Imprimer les DR », le libellé « Diagramme validé » des questions à
 plusieurs cases et CONSEIL_MIN, lu dans window.__CONSEIL_MIN__ puisque la durée conseillée dépend de l'activité
 ouverte. Un petit script d'aiguillage, exécuté avant les moteurs, installe le contenu demandé par l'adresse.
-
-Les constructions graphiques ne passent pas par les tracés à main levée du gabarit : elles utilisent la planche de
-construction (src/planche.js, src/planche.css, src/construction.py), qui compte dans la note comme un tracé du
-gabarit (auto-évaluation par critères, correction superposée après validation).
 """
 import base64
 import copy
@@ -27,17 +23,11 @@ import struct
 import types
 
 import activites
-import atelier
-import construction
-import cours_analytique
-import cours_graphique
-import figures
-import qcm
+import cours
+import dessin
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 GABARIT = ROOT / "src" / "gabarit-exercice-interactif.html"
-PLANCHE_JS = ROOT / "src" / "planche.js"
-PLANCHE_CSS = ROOT / "src" / "planche.css"
 IMAGES = ROOT / "src" / "images"
 SORTIE = ROOT / "index.html"
 TITRE = "Frottement et roulement"
@@ -109,7 +99,7 @@ def render_qbar(b):
 
 
 def item_points(b):
-    return {"q": 1, "grp": len(b.get("fields", ())), "pl": len(b.get("criteria", ()))}.get(b["kind"], 0)
+    return {"q": 1, "grp": len(b.get("fields", ()))}.get(b["kind"], 0)
 
 
 def part_points(p):
@@ -139,10 +129,6 @@ def render_part(p):
     for b in p["blocks"]:
         if b["kind"] == "q":
             blocks.append(render_q(b, p))
-        elif b["kind"] == "grp" and b.get("qcm"):
-            blocks.append(qcm.render_qcm(b))
-        elif b["kind"] == "pl":
-            blocks.append(construction.planche_exo(b))
         elif b["kind"] == "qbar":
             blocks.append(render_qbar(b))
         else:
@@ -159,9 +145,6 @@ def render_part(p):
   </section>"""
 
 
-PLANCHES = {}
-
-
 def prepare_exo(e):
     """Copie et numérote les parties d'une activité (Q1.1, Q1.2…) ; calcule sa configuration pour les moteurs."""
     parts = copy.deepcopy(e["parts"])
@@ -169,7 +152,7 @@ def prepare_exo(e):
         p["num"] = str(i + 1)
         k = 0
         for b in p["blocks"]:
-            if b["kind"] in ("q", "grp", "pl"):
+            if b["kind"] in ("q", "grp"):
                 k += 1
                 b["id"] = f"{e['prefix']}{p['num']}_{k}"
                 b["label"] = f"Q{p['num']}.{k}"
@@ -178,15 +161,13 @@ def prepare_exo(e):
         # la barre de documents prend le numéro de la question qui la suit
         for j, b in enumerate(p["blocks"]):
             if b["kind"] == "qbar":
-                nxt = next((x for x in p["blocks"][j + 1:] if x["kind"] in ("q", "grp", "pl")), None)
+                nxt = next((x for x in p["blocks"][j + 1:] if x["kind"] in ("q", "grp")), None)
                 b["label"] = nxt["label"] if nxt else f"Partie {p['num']}"
     e["P"] = parts
     e["minutes"] = sum(p["minutes"] for p in parts)
-    items = [b for p in parts for b in p["blocks"] if b["kind"] in ("q", "grp", "pl")]
-    e["n_q"] = len(items)
-    e["n_pl"] = sum(1 for b in items if b["kind"] == "pl")
+    e["n_q"] = sum(1 for p in parts for b in p["blocks"] if b["kind"] in ("q", "grp"))
     e["points"] = sum(part_points(p) for p in parts)
-    qcfg, skcfg, parts_cfg = {}, {}, []
+    qcfg, parts_cfg = {}, []
     for p in parts:
         parts_cfg.append({"num": p["num"], "title": p["title"], "minutes": p["minutes"],
                           "duration": hm(p["minutes"]), "points": part_points(p)})
@@ -196,24 +177,12 @@ def prepare_exo(e):
             elif b["kind"] == "grp":
                 for fid, (fl, g, _x) in zip(b["fids"], b["fields"]):
                     qcfg[fid] = {"label": b["label"], "part": p["num"], "pts": 1, "grader": g}
-        for b in p["blocks"]:
-            if b["kind"] == "pl":
-                # la correction superposée donne les lectures : elle attend les questions de la partie
-                # (deps_tout : toutes celles de l'activité, quand la correction donne aussi celles des parties suivantes)
-                src = [x for q in parts for x in q["blocks"]] if b.get("deps_tout") else p["blocks"]
-                deps = [x["id"] for x in src if x["kind"] == "q"]
-                deps += [f for x in src if x["kind"] == "grp" for f in x["fids"]]
-                skcfg[b["id"]] = {"label": b["label"], "part": p["num"], "pts": len(b["criteria"]),
-                                  "deps": deps, "criteria": b["criteria"]}
-                PLANCHES[b["id"]] = b["cfg"]
     np_ = len(parts)
-    detail = f"{e['n_q']} questions" + (f", dont {e['n_pl']} construction{'s' if e['n_pl'] > 1 else ''} graphique"
-                                         f"{'s' if e['n_pl'] > 1 else ''} auto-évaluée{'s' if e['n_pl'] > 1 else ''}"
-                                         if e["n_pl"] else "")
+    detail = f"{e['n_q']} questions notées (unités comprises)"
     e["cfg"] = {"title": e["title"], "minutes": e["minutes"], "duree": hm(e["minutes"]),
                 "cartouche": f"{detail}, réparties en {np_} partie{'s' if np_ > 1 else ''} pondérée"
                              f"{'s' if np_ > 1 else ''} par leur durée.",
-                "parts": parts_cfg, "qcfg": qcfg, "skcfg": skcfg}
+                "parts": parts_cfg, "qcfg": qcfg, "skcfg": {}}
 
 
 # ============================================================ documents des activités
@@ -232,16 +201,7 @@ def render_docs(e):
     return "".join(rail), "".join(tabs), "\n".join(secs)
 
 
-# ============================================================ accueil, pastilles, cartes
-# Pastilles : la méthode de résolution de l'activité (le cours est scindé en approche analytique et résolution
-# graphique) ; elles remplacent les niveaux du dépôt « Chaîne fonctionnelle ».
-def pastille(meth):
-    if not meth:
-        return ""
-    cls = {"Analytique": "n1", "Graphique": "n2"}.get(meth, "n1")
-    return f' <span class="pastille {cls}">{meth}</span>'
-
-
+# ============================================================ accueil, cartes
 def render_exo_home(e):
     docs = sorted(e["docs"], key=lambda k: (k[:2] != "DP", k))
     docs_txt = (", ".join(docs[:-1]) + " et " + docs[-1]) if len(docs) > 1 else (docs[0] if docs else "")
@@ -251,9 +211,8 @@ def render_exo_home(e):
              f'<div><b>{hm(e["minutes"])}</b><span>durée conseillée</span></div>' +
              (f'<div><b>{len(docs)} document{"s" if len(docs) > 1 else ""}</b><span>{docs_txt}</span></div>' if docs else
               '<div><b>Une réponse</b><span>ou plusieurs, à choisir</span></div>') +
-             (f'<div><b>{e["n_pl"]} construction{"s" if e["n_pl"] > 1 else ""}</b><span>sur la planche, auto-évaluée{"s" if e["n_pl"] > 1 else ""}</span></div></div>'
-              if e["n_pl"] else f'<div><b>{e["points"]} points</b><span>un par question</span></div></div>'))
-    return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><span class="mc-tag">{e["tag"]}</span>{pastille(e.get("meth"))}'
+             f'<div><b>{e["points"]} points</b><span>un par question</span></div></div>')
+    return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><span class="mc-tag">{e["tag"]}</span>'
             f'<h1 id="home-title">{e["title"]}</h1><p class="home-sub">{e["sub"]}</p>'
             f'<p class="home-src small">{e["source"]}</p></header>{facts}</div>'
             f'<figure class="home-hero">{e["hero"]()}<figcaption class="small">{e["hero_cap"]}</figcaption></figure></div>')
@@ -265,14 +224,14 @@ MODES_HTML = """<h2 class="home-choose">Choisis ton mode de travail</h2>
     <div class="mc-head"><span class="mc-tag">Mode 1</span><h3>Mode entraînement</h3></div>
     <p class="mc-lead">Pour apprendre en avançant, question par question.</p>
     <ul><li>Chaque question se valide isolément ; la démarche corrigée s'affiche aussitôt.</li>
-      <li>Une construction validée reçoit sa correction superposée dès que les questions qui en dépendent sont validées.</li>
-      <li>La note pondérée s'actualise en continu dans le bandeau.</li></ul>
+      <li>La note pondérée s'actualise en continu dans le bandeau.</li>
+      <li>Les documents et le chronomètre restent disponibles, sans contrainte de temps.</li></ul>
     <button type="button" class="btn btn-mode" data-mode="training">Commencer l'entraînement</button>
   </article>
   <article class="mode-card exam">
     <div class="mc-head"><span class="mc-tag">Mode 2</span><h3>Mode examen</h3></div>
     <p class="mc-lead">Pour se placer dans les conditions d'une évaluation.</p>
-    <ul><li>Aucune correction et aucune note pendant la composition ; les réponses et les constructions restent modifiables.</li>
+    <ul><li>Aucune correction et aucune note pendant la composition ; les réponses restent modifiables.</li>
       <li>Le chronomètre tourne, à comparer à la durée conseillée.</li>
       <li>En fin de sujet, le bouton « J'ai fini, je fais corriger ma copie » dévoile d'un coup les corrections, les notes par partie et la note globale.</li></ul>
     <button type="button" class="btn btn-mode" data-mode="exam">Composer en mode examen</button>
@@ -282,22 +241,13 @@ MODES_HTML = """<h2 class="home-choose">Choisis ton mode de travail</h2>
 <p class="home-back"><a class="btn ghost" href="?">""" + HOUSE + """ Retour à l'accueil</a></p>"""
 
 COURS = [
-    {"key": "cours-frottement-analytique", "tag": "Cours 1", "meth": "Analytique",
-     "title": "Frottement et roulement : approche analytique",
-     "mots": ["Adhérence", "Frottement", "Lois de Coulomb", "Roulement"], "vign": "carte-cours-1",
-     "alt": "Colis poussé sur un plan : actions du sol et force d'adhérence", "render": cours_analytique.render},
-    {"key": "cours-frottement-graphique", "tag": "Cours 2", "meth": "Graphique",
-     "title": "Frottement : résolution graphique",
-     "mots": ["Cône de frottement", "Trois forces", "Dynamique", "Trottoir"], "vign": "carte-cours-2",
-     "alt": "Cône de frottement au point de contact de deux solides", "render": cours_graphique.render},
+    {"key": "cours-frottement-roulement", "tag": "Cours", "title": "Frottement et roulement",
+     "mots": ["Adhérence", "Frottement", "Lois de Coulomb", "Roulement"], "vign": "carte-cours",
+     "alt": "Colis poussé sur un plan : actions du sol et force d'adhérence", "render": cours.render},
 ]
-PAGES = {"atelier-graphique": atelier.render}
-ATELIER_CARTE = {"tag": "Atelier", "title": "Planche de construction graphique", "href": "?ex=atelier-graphique",
-                 "bouton": "Ouvrir l'atelier", "mots": ["Parallèles", "Cônes", "Vecteurs à l'échelle", "Impression"],
-                 "vign": "carte-atelier", "alt": "Planche de construction : droites d'action, cône et dynamique"}
 # Rubrique « Études de cas » : tant qu'aucune étude n'est décrite dans activites.EXO_DEFS, une carte l'annonce.
 ETUDE_A_VENIR = ("Étude de cas", ["Système réel", "Frottement", "Choix d'un matériau"], "carte-etude",
-                 "Frein à tambour d'un vélo")
+                 "Frein de vélo : patins serrés contre la jante")
 OUVRIR = ("Ouvrir l'activité", "Ouvrir l'étude")
 
 
@@ -314,7 +264,7 @@ def carte(tag, title, mots, href, bouton, vign=None, alt="", cls=""):
 
 
 def _exo_card(e):
-    return carte(e["tag"] + pastille(e.get("meth")), e["title"], e["mots"], f'?ex={e["key"]}',
+    return carte(e["tag"], e["title"], e["mots"], f'?ex={e["key"]}',
                  OUVRIR[bool(e.get("etude"))], e["vign"], e["valt"])
 
 
@@ -322,34 +272,28 @@ def render_hub():
     cards = "".join(_exo_card(e) for e in activites.EXO_DEFS if not e.get("etude"))
     etudes = "".join(_exo_card(e) for e in activites.EXO_DEFS if e.get("etude")) or carte(
         "Étude 1", ETUDE_A_VENIR[0], ETUDE_A_VENIR[1], None, None, ETUDE_A_VENIR[2], ETUDE_A_VENIR[3], "en-edition")
-    cours = "".join(carte(c["tag"] + pastille(c.get("meth")), c["title"], c["mots"], f'?ex={c["key"]}', "Lire le cours",
-                          c["vign"], c["alt"], "cours-card") for c in COURS)
-    a = ATELIER_CARTE
-    atel = carte(a["tag"], a["title"], a["mots"], a["href"], a["bouton"], a["vign"], a["alt"])
+    lecons = "".join(carte(c["tag"], c["title"], c["mots"], f'?ex={c["key"]}', "Lire le cours", c["vign"], c["alt"],
+                           "cours-card") for c in COURS)
     return (f'<div class="home-top"><div class="home-top-l"><header class="home-head"><h1 id="home-title">{TITRE}</h1>'
             "<p class=\"home-sub\">Adhérence, frottement et résistance au roulement : savoir quand deux solides glissent "
-            "l'un sur l'autre, calculer les actions de contact avec les lois de Coulomb, ou les construire avec le cône "
-            "de frottement. Deux cours, l'un analytique, l'autre graphique, une planche de construction pour tracer "
-            "à la règle et au rapporteur, et des activités à faire en mode entraînement ou en mode examen.</p>"
-            "</header></div>"
-            f'<figure class="home-hero">{figures.hero()}'
-            '<figcaption class="small">La voiture peut-elle monter sur le trottoir sans élan ? Le cône de frottement '
-            "en D répond (cours 2).</figcaption></figure></div>"
-            f'<h2 class="home-choose">Les cours</h2><div class="ex-grid cours-grid">{cours}</div>'
-            f'<h2 class="home-choose">L\'atelier graphique</h2><div class="ex-grid atelier-grid">{atel}</div>'
+            "l'un sur l'autre et calculer les actions de contact avec les lois de Coulomb, évaluer l'effort qu'oppose "
+            "une roue au roulement. Un cours et des activités tirées des exercices du chapitre, à faire en mode "
+            "entraînement ou en mode examen.</p></header></div>"
+            f'<figure class="home-hero">{activites.fig_route(True)}'
+            '<figcaption class="small">Adhérence des roues motrices, résistance de l\'air et résistance au roulement '
+            "(activités 4 et 5).</figcaption></figure></div>"
+            f'<h2 class="home-choose">Le cours</h2><div class="ex-grid cours-grid">{lecons}</div>'
             f'<h2 class="home-choose">Les activités</h2><div class="ex-grid exo-grid">{cards}</div>'
             f'<h2 class="home-choose">Études de cas</h2><div class="ex-grid etude-grid">{etudes}</div>'
-            f'<p class="home-note small">Pastilles : {pastille("Analytique").strip()} résolution par le calcul (cours 1), '
-            f'{pastille("Graphique").strip()} résolution graphique sur la planche de construction (cours 2). Les '
-            "activités reprennent, une par une, les exercices du chapitre ; les plus courts sont regroupés. Chaque "
-            "activité propose le mode entraînement (correction question par question) ou le mode examen (correction à "
-            "la remise de la copie). Rien n'est enregistré sur l'ordinateur.</p>")
+            '<p class="home-note small">Les activités reprennent, une par une, les exercices du chapitre ; les plus '
+            "courts sont regroupés. Chaque activité propose le mode entraînement (correction question par question) ou "
+            "le mode examen (correction à la remise de la copie). Rien n'est enregistré sur l'ordinateur.</p>")
 
 
 # ============================================================ cours : éléments communs (repris du dépôt de référence)
-def course_head(tag, meth, title, sub):
+def course_head(tag, title, sub):
     return (f'<div class="home-top home-top-single"><div class="home-top-l"><header class="home-head">'
-            f'<span class="mc-tag">{tag}</span>{pastille(meth)}<h1 id="home-title">{title}</h1>'
+            f'<span class="mc-tag">{tag}</span><h1 id="home-title">{title}</h1>'
             f'<p class="home-sub">{sub}</p></header></div></div>')
 
 
@@ -468,7 +412,6 @@ COURS_COMMUN_JS = r"""
   function initCommun(root) {
     initQuiz(root); initCartes(root);
     Array.prototype.forEach.call(root.querySelectorAll(".jeu"), initJeu);
-    if (window.Planche) window.Planche.initAll(root);
   }
 """
 
@@ -565,7 +508,7 @@ AIDES_COURS = types.SimpleNamespace(course_head=course_head, course_section=cour
 
 
 # ============================================================ AIGUILLAGE
-ROUTER_JS = r"""<script>/* Aiguillage : accueil, cours, atelier ou activité selon ?ex=… — s'exécute avant les moteurs du gabarit */
+ROUTER_JS = r"""<script>/* Aiguillage : accueil, cours ou activité selon ?ex=… — s'exécute avant les moteurs du gabarit */
 (function () {
   "use strict";
   var EXOS = window.__EXOS__, ex = new URLSearchParams(location.search).get("ex") || "";
@@ -591,7 +534,7 @@ ROUTER_JS = r"""<script>/* Aiguillage : accueil, cours, atelier ou activité sel
     Array.prototype.forEach.call(document.querySelectorAll(".print-conseil"), function (el) { el.textContent = E.duree; });
   } else {
     document.body.classList.add("hub");
-    var page = document.getElementById("tpl-" + ex) && /^(cours-|atelier-)/.test(ex) ? "tpl-" + ex : "tpl-hub";
+    var page = document.getElementById("tpl-" + ex) && /^cours-/.test(ex) ? "tpl-" + ex : "tpl-hub";
     home.innerHTML = tpl(page);
     if (page !== "tpl-hub") {
       document.body.classList.add("cours-page", "page-" + ex);
@@ -602,26 +545,6 @@ ROUTER_JS = r"""<script>/* Aiguillage : accueil, cours, atelier ou activité sel
   }
 })();
 </script>"""
-
-# liaison des planches d'une activité avec le moteur du gabarit (note, modes, remise de la copie)
-PLANCHES_EXO_JS = r"""<script>/* Planches des activités : comptées comme des tracés du gabarit, corrigées avec la copie */
-(function () {
-  "use strict";
-  var app = window.__app__, parts = document.getElementById("parts");
-  if (!app || !parts || !window.Planche) return;
-  var pls = window.Planche.initAll(parts, { app: app }).filter(Boolean);
-  if (!pls.length) return;
-  function revoir() { pls.forEach(function (p) { p.checkReveal(); }); }
-  // une question validée verrouille son champ : la correction des planches qui l'attendaient peut s'afficher
-  new MutationObserver(revoir).observe(parts, { subtree: true, attributes: true, attributeFilter: ["disabled"] });
-  // mode examen : à la remise de la copie, chaque planche est verrouillée puis corrigée
-  new MutationObserver(function () {
-    if (!document.body.classList.contains("graded") || app.mode() !== "exam") return;
-    pls.forEach(function (p) { if (!p.locked) p.validate(); else p.checkReveal(); });
-  }).observe(document.body, { attributes: true, attributeFilter: ["class"] });
-})();
-</script>"""
-
 
 CONTENT_CSS = """<style>
 /* ---------- compléments de contenu (hors gabarit) : écriture des calculs, documents ---------- */
@@ -704,9 +627,6 @@ body.hub .carte-v .btn,body.hub .carte-v .etat{align-self:end; justify-self:star
 .cv-mots li{font:600 .8rem var(--f-titre); background:var(--bleu-pale); color:var(--encre); border:1px solid #C9D8EC; padding:2px 8px; border-radius:12px; white-space:nowrap}
 .en-edition .cv-img{filter:grayscale(1) opacity(.55)}
 .en-edition .cv-mots li{background:#F4F5F2; border-color:var(--trait-fin); color:var(--encre-2)}
-.pastille{display:inline-block; font:700 .72rem var(--f-titre); letter-spacing:.03em; background:var(--vert); color:#fff; padding:2px 8px; margin-left:6px; vertical-align:middle}
-.pastille.n2{background:var(--bleu)}
-.mc-tag .pastille{margin-left:8px; font-size:.68rem; padding:1px 6px}
 
 __COURS_CSS__
 @media print{
@@ -721,11 +641,11 @@ __COURS_CSS__
 
 # ============================================================ ASSEMBLAGE
 DECOR_JS = """  var DECOR = {
-    // aucun tracé à main levée : les constructions passent par la planche (src/planche.js)
+    // aucun tracé dans les activités actuelles : une entrée par fond de tracé (voir le dépôt RDM)
   };
 """
 DR_NAMES_JS = """  var DR_NAMES = {
-    // aucun tracé à main levée : chaque planche imprime son propre document réponse, à l'échelle
+    // aucun tracé dans les activités actuelles
   };
 """
 DATA_RE = re.compile(r"data:image/(?:png|jpeg);base64,[A-Za-z0-9+/=]+")
@@ -766,20 +686,13 @@ def build():
     templates.append(f'<template id="tpl-modes">{MODES_HTML}</template>')
     templates.append(f'<template id="tpl-hub">{render_hub()}</template>')
     for c in COURS:
-        templates.append(f'<template id="tpl-{c["key"]}">{c["render"](AIDES_COURS, PLANCHES)}</template>')
-    for key, render in PAGES.items():
-        templates.append(f'<template id="tpl-{key}">{render(AIDES_COURS, PLANCHES)}</template>')
-    templates += atelier.fonds_templates()
+        templates.append(f'<template id="tpl-{c["key"]}">{c["render"](AIDES_COURS)}</template>')
 
-    config = (f"<script>window.__EXOS__ = {json.dumps(exos_cfg, ensure_ascii=False)};</script>\n" +
-              construction.config_js(PLANCHES))
-    cours_js = (COURS_COMMUN_JS + cours_analytique.JS + cours_graphique.JS + atelier.JS +
-                '\n  var INIT = { "cours-frottement-analytique": initCoursAnalytique, '
-                '"cours-frottement-graphique": initCoursGraphique, "atelier-graphique": initAtelier };\n')
+    config = f"<script>window.__EXOS__ = {json.dumps(exos_cfg, ensure_ascii=False)};</script>"
+    cours_js = COURS_COMMUN_JS + cours.JS + '\n  var INIT = { "cours-frottement-roulement": initCours };\n'
     router = (ROUTER_JS.replace("__COURS_JS__", cours_js).replace("__TITRE__", TITRE)
               .replace("__HOUSE__", HOUSE.replace("'", "\\'")))
-    planche_css = PLANCHE_CSS.read_text(encoding="utf-8")
-    cours_css = COURS_COMMUN_CSS + cours_analytique.CSS + cours_graphique.CSS + atelier.CSS + qcm.QCM_CSS
+    cours_css = COURS_COMMUN_CSS + cours.CSS + dessin.DESSIN_CSS
 
     page = f"""<!DOCTYPE html>
 <html lang="fr">
@@ -787,10 +700,9 @@ def build():
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{TITRE} — cours et activités interactifs</title>
-<meta name="description" content="Frottement et roulement, cours et activités interactifs : adhérence, frottement, lois de Coulomb, cône de frottement, arc-boutement, résistance au roulement ; résolution analytique et résolution graphique sur une planche de construction.">
+<meta name="description" content="Frottement et roulement, cours et activités interactifs : adhérence, frottement, lois de Coulomb, arc-boutement, résistance au roulement.">
 {style}
 {CONTENT_CSS.replace("__COURS_CSS__", cours_css)}
-<style id="pl-css">{planche_css}</style>
 </head>
 <body class="no-mode">
 
@@ -835,7 +747,7 @@ def build():
     <header class="recap-head"><h2 id="t-recap">Récapitulatif et note finale</h2>
       <p class="small">Les questions non validées comptent comme fausses. Chaque partie est ramenée sur 20, puis pondérée par sa durée conseillée.</p></header>
     <div id="exam-submit-wrap">
-      <p class="es-lead">Ta copie n'est pas encore corrigée : aucune réponse n'est verrouillée, tu peux encore revenir sur les questions et les constructions.</p>
+      <p class="es-lead">Ta copie n'est pas encore corrigée : aucune réponse n'est verrouillée, tu peux encore revenir sur les questions.</p>
       <button type="button" class="btn btn-exam" id="exam-submit">J'ai fini, je fais corriger ma copie</button>
       <p class="es-warn" id="exam-warn" role="alert"></p>
     </div>
@@ -850,7 +762,7 @@ def build():
       <p class="final-detail small"></p>
     </div>
     <div class="recap-foot" id="recap-foot"><button type="button" class="btn btn-print">Imprimer ma copie</button>
-      <span class="small no-print">L'impression reprend tes réponses, tes constructions, les corrections et ce récapitulatif.</span>
+      <span class="small no-print">L'impression reprend tes réponses, les corrections et ce récapitulatif.</span>
       <a class="btn ghost no-print" href="?">{HOUSE} Retour à l'accueil</a></div>
   </section>
 </main>
@@ -867,12 +779,9 @@ def build():
 {chr(10).join(templates)}
 
 {config}
-<script>{PLANCHE_JS.read_text(encoding="utf-8")}</script>
 {router}
 {grading}
 {app}
-{PLANCHES_EXO_JS}
-{qcm.QCM_JS}
 </body>
 </html>
 """
@@ -880,12 +789,10 @@ def build():
     imgs = sum(len(m) for m in DATA_RE.findall(page))
     print(f"{SORTIE.name} : {len(page.encode('utf-8')) / 1024:.0f} Kio, dont images {imgs / 1024:.0f} Kio (base64)")
     for e in activites.EXO_DEFS:
-        print(f"  ?ex={e['key']} : {e['tag']} — {len(e['P'])} partie(s), {e['n_q']} questions, {e['n_pl']} "
-              f"construction(s), {e['points']} points, {hm(e['minutes'])}")
+        print(f"  ?ex={e['key']} : {e['tag']} — {len(e['P'])} partie(s), {e['n_q']} questions, {e['points']} points, "
+              f"{hm(e['minutes'])}")
     for c in COURS:
         print(f"  ?ex={c['key']} : {c['tag']} — {c['title']}")
-    for key in PAGES:
-        print(f"  ?ex={key}")
 
 
 if __name__ == "__main__":
